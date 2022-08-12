@@ -1,0 +1,86 @@
+# Canadian_Immigration
+Analyzing the numbers of invitations for Canadian immigrants in the last couple of years
+
+--First I want to have an understand what this table includes
+
+SELECT *
+FROM Canada_Immigration
+
+--Let's take a look at the data narrowing down the important columns and be sure that the immigration programs does not have have missing values
+
+SELECT 
+	date, 
+	immigration_program,
+	programs_covered,
+	Invitations_issued,
+	year
+FROM Canada_Immigration
+WHERE immigration_program is not null
+ORDER BY year DESC
+
+--I want to know the total of invitations issued for each program but there are some invitations where it does not specifty what type of program so I will be excluding that.
+
+SELECT 
+	immigration_program, 
+	SUM(invitations_issued) as total_invitations, 
+	year
+FROM Canada_Immigration
+WHERE Immigration_program NOT LIKE '%No%'
+GROUP BY 
+	immigration_program, 
+	year
+ORDER BY total_invitations DESC
+
+--Looks like the Canadian Experience Class has the most invitations compared to the other programs
+--Find out average lowest CRS score invited between 2020 and 2021 between immigration programs
+SELECT 
+	CAST(AVG(CRS_score_of_lowest_ranked_candidate_invited) AS INT) AS avg_lowest_score,
+	immigration_program,
+	year,
+	invitations_issued
+FROM Canada_Immigration
+WHERE year between 2020 and 2021 
+GROUP BY Immigration_program, year, invitations_issued
+ORDER BY year DESC
+
+--Let's filter down to just Federal Skill Trades program for 2020-2021
+SELECT 
+	CAST(AVG(CRS_score_of_lowest_ranked_candidate_invited) AS INT) AS avg_lowest_score,
+	immigration_program,
+	year,
+	invitations_issued
+FROM Canada_Immigration
+WHERE year between 2020 and 2021 AND Immigration_program LIKE '%federal%'
+GROUP BY Immigration_program, year, invitations_issued
+ORDER BY year DESC
+	
+--Now I would like to know the min and max of the lowest CRS scores that received an invitation for immigration through the Federal Skilled Trades program
+SELECT 
+	MIN(CRS_score_of_lowest_ranked_candidate_invited) AS min_lowest_score,
+	MAX(CRS_score_of_lowest_ranked_candidate_invited) AS max_lowest_score,
+	immigration_program,
+	year,
+	invitations_issued
+FROM Canada_Immigration
+WHERE year between 2020 and 2021 and Immigration_program LIKE '%Federal%'
+GROUP BY Immigration_program, year, invitations_issued
+ORDER BY year DESC
+	
+--That's strange, it says the min and max lowest CRS scores are 415 so I want to dig a bit more and see if there was a different from 2019-2020.
+--Find min and max of the 250 invitation of Federal Skill Trades program from 2019-2020
+
+SELECT 
+	MIN(CRS_score_of_lowest_ranked_candidate_invited) AS min_lowest_score,
+	MAX(CRS_score_of_lowest_ranked_candidate_invited) AS max_lowest_score,
+	immigration_program,
+	year,
+	invitations_issued
+FROM Canada_Immigration
+WHERE year between 2019 and 2021 and Immigration_program LIKE '%Federal%'
+GROUP BY Immigration_program, year, invitations_issued
+ORDER BY year DESC
+
+-- The previous query tells me that the min and max of lowest CRS scores that were invited to the Federal Skilled Trades program were significantly lower in 2020 than 2019. I'm sure the pandemic had something to do with those numbers.
+	
+
+
